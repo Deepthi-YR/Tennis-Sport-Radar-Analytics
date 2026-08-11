@@ -13,7 +13,7 @@ class SportRadarClient:
     def __init__(self, timeout: int = 30, retries: int = 3) -> None:
         if not settings.api_key:
             raise ValueError(
-                "SPORTRADAR_API_KEY is missing. Copy .env.example to .env first."
+                "SPORTRADAR_API_KEY is missing"
             )
 
         self.timeout = timeout

@@ -1,4 +1,4 @@
-"""Application configuration loaded from environment variables or Streamlit secrets."""
+"""Application configuration for local and Streamlit Cloud environments."""
 
 from dataclasses import dataclass
 import os
@@ -9,11 +9,15 @@ load_dotenv()
 
 
 def get_config_value(name: str, default: str = "") -> str:
+    """Read configuration from environment variables or Streamlit Secrets."""
+
+    # Local .env / environment variable
     value = os.getenv(name)
 
     if value:
         return value
 
+    # Streamlit Cloud Secrets
     try:
         import streamlit as st
 
@@ -30,7 +34,10 @@ def get_config_value(name: str, default: str = "") -> str:
 
 @dataclass(frozen=True)
 class Settings:
-    api_key: str = get_config_value("SPORTRADAR_API_KEY")
+
+    api_key: str = get_config_value(
+        "SPORTRADAR_API_KEY"
+    )
 
     database_url: str = get_config_value(
         "DATABASE_URL",

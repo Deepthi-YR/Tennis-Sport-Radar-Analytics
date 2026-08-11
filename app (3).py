@@ -28,22 +28,59 @@ with tabs[0]:
     else: st.info("Load API data to populate the dashboard: `python -m src.load_data`.")
 
 with tabs[1]:
-    data = query("SELECT c.name, c.country, c.country_code, r.rank, r.movement, r.points, r.competitions_played FROM competitors c JOIN competitor_rankings r ON c.competitor_id=r.competitor_id ORDER BY r.rank")
-    countries = ["All"] + sorted(data.country.dropna().unique().tolist()) if not data.empty else ["All"]
-    country = st.selectbox("Country", countries)
-    maximum_rank = int(maximum_rank) if maximum_rank else 100
-    maximum_rank = max(1, maximum_rank)
-    default_rank = min(50, maximum_rank)
-    rank_limit = st.slider(
-        "Maximum rank",
-        min_value=1,
-        max_value=maximum_rank,
-        value=default_rank,
-        step=1
-    )
-    shown = data[data["rank"] <= rank_limit]
-    if country != "All": shown = shown[shown.country == country]
-    st.dataframe(shown, use_container_width=True, hide_index=True)
+    data = query("""
+        SELECT 
+            c.name,
+            c.country,
+            c.country_code,
+            r.rank,
+            r.movement,
+            r.points,
+            r.competitions_played
+        FROM competitors c
+        JOIN competitor_rankings r 
+            ON c.competitor_id = r.competitor_id
+        ORDER BY r.rank
+    """)
+
+    if not data.empty:
+
+        countries = ["All"] + sorted(
+            data["country"].dropna().unique().tolist()
+        )
+
+        country = st.selectbox("Country", countries)
+
+        # Calculate maximum rank from the database
+        maximum_rank = int(data["rank"].max())
+
+        # Make sure slider has a valid range
+        maximum_rank = max(1, maximum_rank)
+
+        # Default value = 50, or maximum rank if fewer than 50
+        default_rank = min(50, maximum_rank)
+
+        rank_limit = st.slider(
+            "Maximum rank",
+            min_value=1,
+            max_value=maximum_rank,
+            value=default_rank,
+            step=1
+        )
+
+        shown = data[data["rank"] <= rank_limit]
+
+        if country != "All":
+            shown = shown[shown["country"] == country]
+
+        st.dataframe(
+            shown,
+            use_container_width=True,
+            hide_index=True
+        )
+
+    else:
+        st.warning("No ranking data available.")
 
 with tabs[2]:
     data = query("SELECT cp.competition_name, cp.type, cp.gender, ca.category_name, parent.competition_name parent_competition FROM competitions cp JOIN categories ca ON cp.category_id=ca.category_id LEFT JOIN competitions parent ON cp.parent_id=parent.competition_id")

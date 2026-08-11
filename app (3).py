@@ -31,8 +31,16 @@ with tabs[1]:
     data = query("SELECT c.name, c.country, c.country_code, r.rank, r.movement, r.points, r.competitions_played FROM competitors c JOIN competitor_rankings r ON c.competitor_id=r.competitor_id ORDER BY r.rank")
     countries = ["All"] + sorted(data.country.dropna().unique().tolist()) if not data.empty else ["All"]
     country = st.selectbox("Country", countries)
-    maximum_rank = max(1, int(data["rank"].max()) if not data.empty else 1)
-    rank_limit = st.slider("Maximum rank", 1, maximum_rank, min(50, maximum_rank))
+    maximum_rank = int(maximum_rank) if maximum_rank else 100
+    maximum_rank = max(1, maximum_rank)
+    default_rank = min(50, maximum_rank)
+    rank_limit = st.slider(
+        "Maximum rank",
+        min_value=1,
+        max_value=maximum_rank,
+        value=default_rank,
+        step=1
+    )
     shown = data[data["rank"] <= rank_limit]
     if country != "All": shown = shown[shown.country == country]
     st.dataframe(shown, use_container_width=True, hide_index=True)

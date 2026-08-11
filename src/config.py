@@ -9,8 +9,6 @@ load_dotenv()
 
 
 def get_config_value(name: str, default: str = "") -> str:
-    """Read configuration from environment variables or Streamlit secrets."""
-
     value = os.getenv(name)
 
     if value:
@@ -32,10 +30,7 @@ def get_config_value(name: str, default: str = "") -> str:
 
 @dataclass(frozen=True)
 class Settings:
-
-    api_key: str = get_config_value(
-        "SPORTRADAR_API_KEY"
-    )
+    api_key: str = get_config_value("SPORTRADAR_API_KEY")
 
     database_url: str = get_config_value(
         "DATABASE_URL",

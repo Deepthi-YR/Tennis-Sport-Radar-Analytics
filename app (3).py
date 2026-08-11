@@ -4,10 +4,43 @@ import plotly.express as px
 import streamlit as st
 from sqlalchemy import text
 from src.database import get_engine, initialize_database
+from src.load_data import main as load_api_data
 
-st.set_page_config(page_title="Tennis Analytics", page_icon="🎾", layout="wide")
+st.set_page_config(
+    page_title="Tennis Analytics",
+    page_icon="🎾",
+    layout="wide"
+)
+
+# Initialize database tables
 initialize_database()
+
 engine = get_engine()
+
+
+@st.cache_resource
+def load_database():
+    """Load SportRadar data if the database is empty."""
+
+    try:
+        result = pd.read_sql(
+            text("SELECT COUNT(*) AS total FROM competitors"),
+            engine
+        )
+
+        total = int(result.loc[0, "total"])
+
+        if total == 0:
+            load_api_data()
+
+        return True
+
+    except Exception as exc:
+        st.error(f"Unable to load SportRadar data: {exc}")
+        return False
+
+
+load_database()
 
 @st.cache_data(ttl=60)
 def query(sql, params=None):
